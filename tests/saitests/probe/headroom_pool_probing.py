@@ -268,6 +268,7 @@ class HeadroomPoolProbing(ProbingBase):
         """
         # Get pool size
         pool_size = self.get_pool_size()
+        pool_size_pkt = pool_size // self.probe_cells_per_packet
 
         # Log probing start
         ProbingObserver.console("=" * 80)
@@ -365,10 +366,11 @@ class HeadroomPoolProbing(ProbingBase):
 
                 # PFC XOFF: Upper Bound (optimization: use previous PG's threshold)
                 pfc_upper_init = (
-                    pg_results[-1]['pfc_xoff_threshold'] if pg_results else pool_size
+                    pg_results[-1]['pfc_xoff_threshold'] if pg_results else pool_size_pkt
                 )
                 pfc_upper, pfc_upper_time = pfc_algos['upper'].run(
-                    src_port_id, dst_port_id, pfc_upper_init, **traffic_keys
+                    src_port_id, dst_port_id, pfc_upper_init,
+                    pool_size=pool_size_pkt, **traffic_keys
                 )
                 total_time += pfc_upper_time
                 if pfc_upper is None:
@@ -473,10 +475,11 @@ class HeadroomPoolProbing(ProbingBase):
 
                 # Ingress Drop: Upper Bound (optimization: use previous PG's threshold)
                 drop_upper_init = (
-                    pg_results[-1]['ingress_drop_threshold'] if pg_results else pool_size
+                    pg_results[-1]['ingress_drop_threshold'] if pg_results else pool_size_pkt
                 )
                 drop_upper, drop_upper_time = drop_algos['upper'].run(
-                    src_port_id, dst_port_id, drop_upper_init, **traffic_keys
+                    src_port_id, dst_port_id, drop_upper_init,
+                    pool_size=pool_size_pkt, **traffic_keys
                 )
                 total_time += drop_upper_time
                 if drop_upper is None:
